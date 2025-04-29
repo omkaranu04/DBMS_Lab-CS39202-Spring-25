@@ -1,0 +1,86 @@
+
+A    Show names of all citizens who holds more than 1 acre of land
+SELECT DISTINCT c.name
+FROM citizens c
+JOIN assets a ON c.citizen_id = a.owner_id
+JOIN lands l ON a.asset_id = l.asset_id
+WHERE l.area_in_acres > 1;
+
+
+B    Show name of all girls who study in school with household income less than 1 Lakh per year
+SELECT c.name
+FROM citizens c
+JOIN households h ON c.house_no = h.house_no
+WHERE c.gender = 'Female' 
+  AND h.total_income < 100000 
+  AND c.edu_level IN ('10th', '12th');
+
+
+C    How many acres of land cultivate rice
+SELECT SUM(l.area_in_acres) AS total_acres
+FROM lands l
+WHERE l.crop_type = 'Rice';
+
+
+D    Number of citizens who are born after 1.1.2000 and have educational qualification of 10th class
+SELECT COUNT(*) AS citizen_count
+FROM citizens
+WHERE dob > '2000-01-01' AND edu_level = '10th';
+
+E    Name of all employees of panchayat who also hold more than 1 acre land
+SELECT c.name
+FROM panchayat_members pm
+JOIN citizens c ON pm.citizen_id = c.citizen_id
+JOIN assets a ON c.citizen_id = a.owner_id
+JOIN lands l ON a.asset_id = l.asset_id
+WHERE l.area_in_acres > 1;
+
+
+F    Name of the household members of Panchayat Pradhan
+WITH pradhan_household AS (
+    SELECT 
+        c.house_no
+    FROM 
+        panchayat_members pm
+    JOIN citizens c ON pm.citizen_id = c.citizen_id
+    WHERE 
+        pm.designation = 'Panchayat Pradhan'
+)
+SELECT 
+    c.name
+FROM 
+    citizens c
+WHERE 
+    c.house_no = (SELECT house_no FROM pradhan_household)
+    AND c.citizen_id != (SELECT pm.citizen_id 
+                         FROM panchayat_members pm 
+                         WHERE pm.designation = 'Panchayat Pradhan');
+
+
+G    Total number of street light assets installed in a particular locality named Phulera that are installed in 2024
+SELECT SUM(value) AS total_street_lights
+FROM assets
+WHERE type = 'Street Lights' 
+  AND location = 'Phulera' 
+  AND EXTRACT(YEAR FROM date_of_acquisition) = 2024;
+
+
+H    Number of vaccinations done in 2024 for the children of citizens whose educational qualification is class 10
+SELECT COUNT(*) AS total_vaccinations
+FROM beneficiaries b
+JOIN citizens c ON b.citizen_id = c.citizen_id
+JOIN welfare_schemes ws ON b.scheme_id = ws.scheme_id
+WHERE ws.scheme_type = 'Vaccination' AND EXTRACT(YEAR FROM b.enrollment_date) = 2024 AND c.edu_level = '10th';
+
+
+I    Total number of births of boy child in the year 2024
+SELECT COUNT(*) AS total_boy_births
+FROM citizens
+WHERE gender = 'Male' AND EXTRACT(YEAR FROM dob) = 2024;
+
+
+J    Number of citizens who belong to the household of at least one panchayat employee.
+SELECT COUNT(DISTINCT c.citizen_id) AS citizen_count
+FROM panchayat_members pm
+JOIN citizens c ON pm.citizen_id = c.citizen_id
+JOIN households h ON c.house_no = h.house_no;

@@ -1,0 +1,1 @@
+insert into panchayats (panchayat_id, name) values (1, 'Mirzapur');
